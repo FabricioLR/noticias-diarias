@@ -3,7 +3,7 @@ Este repositório contém o workflow de automação para curadoria e resumo de n
 
 A solução foi desenhada com foco em soberania de dados e segurança, rodando inteiramente em uma infraestrutura Self-Hosted.
 
-<img src="screenshot.png" alt="Workflow" width="300" height="200">
+<img src="screenshot.png" alt="Workflow" width="600" height="500">
 
 ## Arquitetura e Tecnologias
 ### Core da Aplicação
