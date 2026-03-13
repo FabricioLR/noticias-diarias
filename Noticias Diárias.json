@@ -1,0 +1,288 @@
+{
+  "name": "Noticias Diárias",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://techcrunch.com/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -2064,
+        0
+      ],
+      "id": "f42c35ef-668e-43bc-9e58-40c1be6efd22",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.link }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -1760,
+        -224
+      ],
+      "id": "fdc81777-7f08-483e-a86a-0eadb0a00a51",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "extractHtmlContent",
+        "extractionValues": {
+          "values": [
+            {
+              "cssSelector": ".entry-content"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        -1600,
+        -224
+      ],
+      "id": "0ffa53d8-2c29-4856-871f-00370c09d7d7",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://10.0.0.110:8901/message/sendText/fabricio",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "LbrJ7rgbWzVVcTWQq0Nvei83ekUIiyNfDlDiM2Ol"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\":\"120363423459204929@g.us\",\n  \"options\":{\n    \"delay\":1200,\n    \"presence\":\"composing\"\n  },\n  \"textMessage\":{\n    \"text\": \"{{ $json.text }}\"\n  }\n}",
+        "options": {
+          "allowUnauthorizedCerts": true
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -864,
+        -16
+      ],
+      "id": "d3d2cae7-cff1-470b-b774-1e61435dd606",
+      "name": "HTTP Request1",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7,
+              "triggerAtMinute": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -2256,
+        0
+      ],
+      "id": "20399746-e548-478d-8c11-a8eeb0535d2b",
+      "name": "Schedule Trigger1"
+    },
+    {
+      "parameters": {
+        "maxItems": 10
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -1904,
+        0
+      ],
+      "id": "74393f5e-6e82-403c-870c-39a233aaca08",
+      "name": "noticias"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\nvar merge = $('merge').all()\n\nvar text = \"\"\n\nfor (var i = 0; i < 10; i++){\n  text += merge[i + 10][\"json\"][\"title\"] + \"\\\\n       \" + merge[i][\"json\"][\"content\"][\"parts\"][0][\"text\"].replaceAll(\"\\\"\", \"\\'\").replaceAll(\"\\n\", \"\") + \"\\\\n\\\\n\\\\n\"\n\n\n}\nreturn [{json: {text}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1024,
+        -16
+      ],
+      "id": "eb966695-771b-465d-bb42-b092db35f470",
+      "name": "Code in JavaScript",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-3.1-flash-lite-preview",
+          "mode": "list",
+          "cachedResultName": "models/gemini-3.1-flash-lite-preview"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Resuma a notícia abaixo em no máximo 10 linhas, de forma objetiva:  {{ $json[\"\"] }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -1456,
+        -224
+      ],
+      "id": "9b74838e-09da-45bf-8e98-1a5ca501655a",
+      "name": "resumos",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "Y7QrmUmvwH9Jh7Hg",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1184,
+        -16
+      ],
+      "id": "1d57958e-c4e0-4ec4-952a-024d6e127b09",
+      "name": "merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "noticias",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "resumos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger1": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "noticias": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "resumos": {
+      "main": [
+        [
+          {
+            "node": "merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "3f94f422-0018-4638-b32a-6d3c6124483f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6fb455595f7fdca63385174c065f7e776b0bf571dfdab53c3d05918806d5504d"
+  },
+  "id": "LValk4YfdTmE0Y8d",
+  "tags": []
+}
